@@ -1,5 +1,6 @@
 const { Sequelize, Model, DataTypes } = require('sequelize');
 const { CUSTOMER_TABLE } = require('./customer.model');
+
 const ORDER_TABLE = 'orders';
 
 const OrderSchema = {
@@ -26,17 +27,6 @@ const OrderSchema = {
     field: 'create_at',
     defaultValue: Sequelize.literal('NOW()'),
   },
-  total: {
-    type: DataTypes.VIRTUAL,
-    get() {
-      if (this.items.length > 0) {
-        return this.items.reduce((total, item) => {
-          return total + item.price * item.OrderProduct.amount;
-        }, 0);
-      }
-      return 0;
-    },
-  },
 };
 
 class Order extends Model {
@@ -49,6 +39,17 @@ class Order extends Model {
       otherKey: 'productId',
     });
   }
+
+  // 🔹 Definir el campo virtual dentro del modelo, no en la BD
+  get total() {
+    if (this.items && this.items.length > 0) {
+      return this.items.reduce((total, item) => {
+        return total + item.price * item.OrderProduct.amount;
+      }, 0);
+    }
+    return 0;
+  }
+
   static config(sequelize) {
     return {
       sequelize,
